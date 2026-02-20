@@ -1,22 +1,33 @@
+//
+//  VistaNuevoEstudiante.swift
+//  Curso-iOS-SwiftData
+//
+//  Created by Equipo 2 on 20/2/26.
+//
+
+import SwiftUI
+import SwiftData
+
 struct VistaNuevoEstudiante: View {
-    @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     
-    @State private var nombre = ""
-    @State private var email = ""
-    @State private var fechaNacimiento = Date()
-
+    @State private var viewModel: NuevoEstudianteViewModel
+    
+    init(context: ModelContext) {
+        _viewModel = State(initialValue: NuevoEstudianteViewModel(context: context))
+    }
+    
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Nombre", text: $nombre)
+                TextField("Nombre", text: $viewModel.nombre)
                 
-                TextField("Email", text: $email)
+                TextField("Email", text: $viewModel.email)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                 
                 DatePicker("Fecha de nacimiento",
-                        selection: $fechaNacimiento,
+                           selection: $viewModel.fechaNacimiento,
                         displayedComponents: .date)
             }
             .navigationTitle("Nuevo estudiante")
@@ -26,17 +37,13 @@ struct VistaNuevoEstudiante: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") {
-                        let estudiante = Estudiante(
-                            nombre: nombre,
-                            email: email,
-                            fechaNacimiento: fechaNacimiento
-                        )
-                        context.insert(estudiante)
+                        viewModel.guardar()
                         dismiss()
                     }
-                    .disabled(nombre.isEmpty || email.isEmpty)
+                .disabled(!viewModel.esValido)
                 }
             }
         }
     }
 }
+
